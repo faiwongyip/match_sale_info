@@ -38,6 +38,9 @@ kwFilename = r'.\match_words.xlsx'
 cslist = get_cslist()
 
 def deal_keyword(filename):
+    """ 处理match_words.xlsx
+        返回关键词列表相关的列表、字典
+    """ 
     kwDf = pd.read_excel(filename)
     kwSt = {kw for kw in kwDf['关键词']}
     kwDic = {kw:(cf,re.compile(ctn),re.compile(rm)) if ctn else (cf,ctn,re.compile(rm)) for kw,cf,ctn,rm in zip(kwDf['关键词'],kwDf['类别'],kwDf['包含'].fillna(''),kwDf['排除'])}
@@ -56,6 +59,10 @@ def deal_keyword(filename):
 kwSt, kwDic, cfIdxDic, firstWdDic, regexCompile = deal_keyword(kwFilename)
     
 def deal_content(cntfile):
+    """ 处理文本文件
+        去除无关符号，断句
+        返回句子列表
+    """
     cntLt = []
     with open(cntfile) as f:
         content = re.sub('(\d)[,，](\d)','\\1\\2',f.read())
@@ -68,11 +75,16 @@ def deal_content(cntfile):
     return set(cntLt)
     
 def match_stc4(regexCompile, stc, kwDic):
+    """ 判断关键词在不在句子里
+        返回匹配上的关键词列表
+    """
     tmpWdLt = regexCompile.findall(stc)
     wdLt = [wd for wd in tmpWdLt if (not kwDic[wd][1] or kwDic[wd][1].search(stc)) and not kwDic[wd][2].search(stc)]
     return set(wdLt)
     
 def get_news_info(salesinfoid,postdate,srcsys):
+    """ 查询新闻记录信息
+    """
     sql = '''
         select brandname,manufacture,city,agencyname,postdate
             ,salesinfoid,carsseriesname,title,srcsys
@@ -89,6 +101,8 @@ def get_news_info(salesinfoid,postdate,srcsys):
     return result
 
 def insert_data(table, data):
+    """ 保存结果插入数据库
+    """
     listsql = '''
         insert into saleInfoList        
             (brandname,manufacture,city,agencyname,postdate
@@ -233,5 +247,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
